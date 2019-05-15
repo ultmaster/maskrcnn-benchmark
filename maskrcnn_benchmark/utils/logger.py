@@ -2,9 +2,12 @@
 import logging
 import os
 import sys
+from datetime import datetime
 
 
-def setup_logger(name, save_dir, distributed_rank, filename="log.txt"):
+def setup_logger(name, save_dir, distributed_rank, filename=None):
+    if filename is None:
+        filename = "logs/" + datetime.now().strftime("%Y%m%d_%H%M%S") + ".log"
     logger = logging.getLogger(name)
     logger.setLevel(logging.DEBUG)
     # don't log results for the non-master process

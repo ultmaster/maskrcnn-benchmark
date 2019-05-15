@@ -2,6 +2,7 @@
 import datetime
 import logging
 import time
+import os
 
 import torch
 import torch.distributed as dist
@@ -46,6 +47,8 @@ def do_train(
     checkpoint_period,
     arguments,
 ):
+    label = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    os.makedirs("checkpoints/" + label, exist_ok=True)
     logger = logging.getLogger("maskrcnn_benchmark.trainer")
     logger.info("Start training")
     meters = MetricLogger(delimiter="  ")
@@ -106,9 +109,9 @@ def do_train(
                 )
             )
         if iteration % checkpoint_period == 0:
-            checkpointer.save("model_{:07d}".format(iteration), **arguments)
+            checkpointer.save("checkpoints/" + label + "/model_{:07d}".format(iteration), **arguments)
         if iteration == max_iter:
-            checkpointer.save("model_final", **arguments)
+            checkpointer.save("checkpoints/" + label + "/model_final", **arguments)
 
     total_training_time = time.time() - start_training_time
     total_time_str = str(datetime.timedelta(seconds=total_training_time))

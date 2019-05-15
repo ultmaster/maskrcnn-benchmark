@@ -16,6 +16,7 @@ from maskrcnn_benchmark.utils.collect_env import collect_env_info
 from maskrcnn_benchmark.utils.comm import synchronize, get_rank
 from maskrcnn_benchmark.utils.logger import setup_logger
 from maskrcnn_benchmark.utils.miscellaneous import mkdir
+import maskrcnn_benchmark.utils.set_gpu
 
 # Check if we can enable mixed-precision via apex.amp
 try:

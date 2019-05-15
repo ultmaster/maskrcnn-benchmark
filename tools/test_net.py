@@ -16,7 +16,7 @@ from maskrcnn_benchmark.utils.collect_env import collect_env_info
 from maskrcnn_benchmark.utils.comm import synchronize, get_rank
 from maskrcnn_benchmark.utils.logger import setup_logger
 from maskrcnn_benchmark.utils.miscellaneous import mkdir
-import maskrcnn_benchmark.utils.set_gpu
+from maskrcnn_benchmark.utils.set_gpu import sorted_gpu
 
 # Check if we can enable mixed-precision via apex.amp
 try:
@@ -45,9 +45,10 @@ def main():
 
     num_gpus = int(os.environ["WORLD_SIZE"]) if "WORLD_SIZE" in os.environ else 1
     distributed = num_gpus > 1
+    local_rank = sorted_gpu[args.local_rank] if sorted_gpu else args.local_rank
 
     if distributed:
-        torch.cuda.set_device(args.local_rank)
+        torch.cuda.set_device(local_rank)
         torch.distributed.init_process_group(
             backend="nccl", init_method="env://"
         )

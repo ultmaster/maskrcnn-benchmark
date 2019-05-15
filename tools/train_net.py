@@ -24,7 +24,7 @@ from maskrcnn_benchmark.utils.comm import synchronize, get_rank
 from maskrcnn_benchmark.utils.imports import import_file
 from maskrcnn_benchmark.utils.logger import setup_logger
 from maskrcnn_benchmark.utils.miscellaneous import mkdir
-import maskrcnn_benchmark.utils.set_gpu
+from maskrcnn_benchmark.utils.set_gpu import sorted_gpu
 
 # See if we can use apex.DistributedDataParallel instead of the torch default,
 # and enable mixed-precision via apex.amp
@@ -148,9 +148,10 @@ def main():
 
     num_gpus = int(os.environ["WORLD_SIZE"]) if "WORLD_SIZE" in os.environ else 1
     args.distributed = num_gpus > 1
+    local_rank = sorted_gpu[args.local_rank] if sorted_gpu else args.local_rank
 
     if args.distributed:
-        torch.cuda.set_device(args.local_rank)
+        torch.cuda.set_device(local_rank)
         torch.distributed.init_process_group(
             backend="nccl", init_method="env://"
         )
@@ -177,7 +178,7 @@ def main():
         logger.info(config_str)
     logger.info("Running with config:\n{}".format(cfg))
 
-    model = train(cfg, args.local_rank, args.distributed)
+    model = train(cfg, local_rank, args.distributed)
 
     if not args.skip_test:
         run_test(cfg, model, args.distributed)

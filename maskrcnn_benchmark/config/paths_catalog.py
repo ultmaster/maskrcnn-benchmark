@@ -103,6 +103,18 @@ class DatasetCatalog(object):
         "cityscapes_fine_instanceonly_seg_test_cocostyle": {
             "img_dir": "cityscapes/images",
             "ann_file": "cityscapes/annotations/instancesonly_filtered_gtFine_test.json"
+        },
+        "openimages_train_cocostyle": {
+            "img_dir": "openimages/train",
+            "ann_file": "openimages/annotations/train-annotations-bbox.json"
+        },
+        "openimages_val_cocostyle": {
+            "img_dir": "openimages/val",
+            "ann_file": "openimages/annotations/val-annotations-bbox.json"
+        },
+        "openimages_test_cocostyle": {
+            "img_dir": "openimages/test",
+            "ann_file": "openimages/annotations/test-annotations-bbox.json"
         }
     }
 

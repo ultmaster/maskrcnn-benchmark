@@ -31,7 +31,7 @@ MODEL:
     SHARE_BOX_FEATURE_EXTRACTOR: False
   MASK_ON: False
 DATASETS:
-  TRAIN: ("openimages_test",)
+  TRAIN: ("openimages_val",)
   TEST: ("openimages_val",)
 DATALOADER:
   SIZE_DIVISIBILITY: 32
@@ -40,6 +40,6 @@ SOLVER:
   BASE_LR: 0.0025
   WEIGHT_DECAY: 0.0001
   STEPS: (480000, 640000)
-  MAX_ITER: 720000
+  MAX_ITER: 50
 TEST:
   IMS_PER_BATCH: 1

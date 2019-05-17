@@ -11,97 +11,12 @@ from maskrcnn_benchmark import layers as L
 from maskrcnn_benchmark.utils import cv2_util
 
 
-class COCODemo(object):
-    # COCO categories for pretty print
-    CATEGORIES = [
-        "__background",
-        "person",
-        "bicycle",
-        "car",
-        "motorcycle",
-        "airplane",
-        "bus",
-        "train",
-        "truck",
-        "boat",
-        "traffic light",
-        "fire hydrant",
-        "stop sign",
-        "parking meter",
-        "bench",
-        "bird",
-        "cat",
-        "dog",
-        "horse",
-        "sheep",
-        "cow",
-        "elephant",
-        "bear",
-        "zebra",
-        "giraffe",
-        "backpack",
-        "umbrella",
-        "handbag",
-        "tie",
-        "suitcase",
-        "frisbee",
-        "skis",
-        "snowboard",
-        "sports ball",
-        "kite",
-        "baseball bat",
-        "baseball glove",
-        "skateboard",
-        "surfboard",
-        "tennis racket",
-        "bottle",
-        "wine glass",
-        "cup",
-        "fork",
-        "knife",
-        "spoon",
-        "bowl",
-        "banana",
-        "apple",
-        "sandwich",
-        "orange",
-        "broccoli",
-        "carrot",
-        "hot dog",
-        "pizza",
-        "donut",
-        "cake",
-        "chair",
-        "couch",
-        "potted plant",
-        "bed",
-        "dining table",
-        "toilet",
-        "tv",
-        "laptop",
-        "mouse",
-        "remote",
-        "keyboard",
-        "cell phone",
-        "microwave",
-        "oven",
-        "toaster",
-        "sink",
-        "refrigerator",
-        "book",
-        "clock",
-        "vase",
-        "scissors",
-        "teddy bear",
-        "hair drier",
-        "toothbrush",
-    ]
+class OpenImagesDemo(object):
 
     def __init__(
         self,
         cfg,
         confidence_threshold=0.7,
-        show_mask_heatmaps=False,
         masks_per_dim=2,
         min_image_size=224,
     ):
@@ -118,7 +33,7 @@ class COCODemo(object):
 
         self.transforms = self.build_transform()
 
-        mask_threshold = -1 if show_mask_heatmaps else 0.5
+        mask_threshold = 0.5
         self.masker = Masker(threshold=mask_threshold, padding=1)
 
         # used to make colors for each class
@@ -126,7 +41,6 @@ class COCODemo(object):
 
         self.cpu_device = torch.device("cpu")
         self.confidence_threshold = confidence_threshold
-        self.show_mask_heatmaps = show_mask_heatmaps
         self.masks_per_dim = masks_per_dim
 
     def build_transform(self):
@@ -170,16 +84,11 @@ class COCODemo(object):
                 the BoxList via `prediction.fields()`
         """
         predictions = self.compute_prediction(image)
+        print(predictions)
         top_predictions = self.select_top_predictions(predictions)
 
         result = image.copy()
-        if self.show_mask_heatmaps:
-            return self.create_mask_montage(result, top_predictions)
         result = self.overlay_boxes(result, top_predictions)
-        if self.cfg.MODEL.MASK_ON:
-            result = self.overlay_mask(result, top_predictions)
-        if self.cfg.MODEL.KEYPOINT_ON:
-            result = self.overlay_keypoints(result, top_predictions)
         result = self.overlay_class_names(result, top_predictions)
 
         return result
@@ -273,41 +182,6 @@ class COCODemo(object):
 
         return image
 
-    def overlay_mask(self, image, predictions):
-        """
-        Adds the instances contours for each predicted object.
-        Each label has a different color.
-
-        Arguments:
-            image (np.ndarray): an image as returned by OpenCV
-            predictions (BoxList): the result of the computation by the model.
-                It should contain the field `mask` and `labels`.
-        """
-        masks = predictions.get_field("mask").numpy()
-        labels = predictions.get_field("labels")
-
-        colors = self.compute_colors_for_labels(labels).tolist()
-
-        for mask, color in zip(masks, colors):
-            thresh = mask[0, :, :, None]
-            contours, hierarchy = cv2_util.findContours(
-                thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE
-            )
-            image = cv2.drawContours(image, contours, -1, color, 3)
-
-        composite = image
-
-        return composite
-
-    def overlay_keypoints(self, image, predictions):
-        keypoints = predictions.get_field("keypoints")
-        kps = keypoints.keypoints
-        scores = keypoints.get_field("logits")
-        kps = torch.cat((kps[:, :, 0:2], scores[:, :, None]), dim=2).numpy()
-        for region in kps:
-            image = vis_keypoints(image, region.transpose((1, 0)))
-        return image
-
     def create_mask_montage(self, image, predictions):
         """
         Create a montage showing the probability heatmaps for each one one of the
@@ -356,7 +230,9 @@ class COCODemo(object):
         """
         scores = predictions.get_field("scores").tolist()
         labels = predictions.get_field("labels").tolist()
-        labels = [self.CATEGORIES[i] for i in labels]
+        with open("openimages_categories.txt") as file:
+            categories = ["__background"] + list(map(lambda l: l.strip(), file.readlines()))
+        labels = [categories[i] for i in labels]
         boxes = predictions.bbox
 
         template = "{}: {:.2f}"

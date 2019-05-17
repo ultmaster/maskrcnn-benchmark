@@ -16,6 +16,7 @@ class OpenImagesDataset(data.Dataset):
         super().__init__()
         self.transforms = transforms
         self.root = root
+        self.contiguous_category_id_to_json_id = {0: "__background"}
 
         available_images = dict()
         class_labels = dict()
@@ -32,8 +33,9 @@ class OpenImagesDataset(data.Dataset):
                 available_images[row[0]] = (int(row[1]), int(row[2]))
 
         with open(class_descriptions_file) as f:
-            for i, row in enumerate(csv.reader(f)):
-                class_labels[row[0]] = i + 1
+            for i, row in enumerate(csv.reader(f), start=1):
+                class_labels[row[0]] = i
+                self.contiguous_category_id_to_json_id[i] = row[0]
 
         with open(ann_file) as f:
             for i, row in enumerate(csv.reader(f)):
@@ -57,18 +59,18 @@ class OpenImagesDataset(data.Dataset):
                 if x1 < x2 and y1 < y2:
                     available_bbox[key].append([x1, y1, x2, y2, label])
 
-        self.image_keys = sorted(available_bbox.keys())
-        self.image_bbox = [[lst[:4] for lst in available_bbox[key]] for key in self.image_keys]
-        self.image_labels = [[lst[4] for lst in available_bbox[key]] for key in self.image_keys]
-        self.image_sizes = [available_images[key] for key in self.image_keys]
-        print("Index created. Dataset size = %d" % len(self.image_keys))
+        self.id_to_img_map = sorted(available_bbox.keys())
+        self.image_bbox = [[lst[:4] for lst in available_bbox[key]] for key in self.id_to_img_map]
+        self.image_labels = [[lst[4] for lst in available_bbox[key]] for key in self.id_to_img_map]
+        self.image_sizes = [available_images[key] for key in self.id_to_img_map]
+        print("Index created. Dataset size = %d" % len(self.id_to_img_map))
         sys.stdout.flush()
 
     def __len__(self):
-        return len(self.image_keys)
+        return len(self.id_to_img_map)
 
     def __getitem__(self, idx):
-        key = self.image_keys[idx]
+        key = self.id_to_img_map[idx]
         # load the image as a PIL Image
         image = Image.open(os.path.join(self.root, key + ".jpg")).convert('RGB')
 

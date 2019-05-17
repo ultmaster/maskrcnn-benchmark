@@ -50,8 +50,8 @@ class OpenImagesDataset(data.Dataset):
                                             label])
 
         self.image_keys = sorted(available_bbox.keys())
-        self.image_bbox = [[lst[:4] for lst in available_bbox[key][:4]] for key in self.image_keys]
-        self.image_labels = [[lst[4] for lst in available_bbox[key][:4]] for key in self.image_keys]
+        self.image_bbox = [[lst[:4] for lst in available_bbox[key]] for key in self.image_keys]
+        self.image_labels = [[lst[4] for lst in available_bbox[key]] for key in self.image_keys]
         self.image_sizes = [available_images[key] for key in self.image_keys]
         print("Index created. Dataset size = %d" % len(self.image_keys))
         sys.stdout.flush()

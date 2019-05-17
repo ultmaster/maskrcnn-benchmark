@@ -3,6 +3,7 @@ import os
 import sys
 from collections import defaultdict
 
+import cv2
 import torch
 from PIL import Image
 from torch.utils import data
@@ -45,12 +46,19 @@ class OpenImagesDataset(data.Dataset):
                     continue
                 label = class_labels[row[2]]
                 width, height = available_images[key]
-                available_bbox[key].append([float(row[4]) * width, float(row[6]) * width,
-                                            float(row[5]) * height, float(row[7]) * height,
-                                            label])
+                x1, x2 = int(float(row[4]) * width), int(float(row[5]) * width)
+                x1, x2 = map(lambda t: max(t, min(t, width - 1), 0), [x1, x2])
+                y1, y2 = int(float(row[6]) * height), int(float(row[7]) * height)
+                y1, y2 = map(lambda t: max(t, min(t, height - 1), 0), [y1, y2])
+                if x1 > x2:
+                    x1, x2 = x2, x1
+                if y1 > y2:
+                    y1, y2 = y2, y1
+                if x1 < x2 and y1 < y2:
+                    available_bbox[key].append([x1, y1, x2, y2, label])
 
         self.image_keys = sorted(available_bbox.keys())
-        self.image_bbox = [[list(map(int, lst[:4])) for lst in available_bbox[key]] for key in self.image_keys]
+        self.image_bbox = [[lst[:4] for lst in available_bbox[key]] for key in self.image_keys]
         self.image_labels = [[lst[4] for lst in available_bbox[key]] for key in self.image_keys]
         self.image_sizes = [available_images[key] for key in self.image_keys]
         print("Index created. Dataset size = %d" % len(self.image_keys))
@@ -75,6 +83,16 @@ class OpenImagesDataset(data.Dataset):
         boxlist = BoxList(boxes, image.size, mode="xyxy")
         # add the labels to the boxlist
         boxlist.add_field("labels", labels)
+
+        # DEBUG vis
+        # import numpy as np
+        # import matplotlib.pyplot as plt
+        # im = np.array(image)
+        # for x1, y1, x2, y2 in boxes:
+        #     print(x1, y1, x2, y2)
+        #     cv2.rectangle(im, (x1, y1), (x2, y2), color=(255, 255, 255), thickness=2)
+        # plt.imshow(im)
+        # plt.show(block=True)
 
         if self.transforms:
             image, boxlist = self.transforms(image, boxlist)

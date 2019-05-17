@@ -112,7 +112,7 @@ class DatasetCatalog(object):
         },
         "openimages_val": {
             "img_dir": "openimages/val",
-            "ann_file": "openimages/annotations/val-annotations-bbox.csv",
+            "ann_file": "openimages/annotations/validation-annotations-bbox.csv",
             "class_file": "openimages/annotations/class-descriptions-boxable.csv",
             "valid_images_file": "openimages/annotations/valid_images.csv",
         },

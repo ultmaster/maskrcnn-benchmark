@@ -29,10 +29,10 @@ MODEL:
     POOLER_SAMPLING_RATIO: 2
     RESOLUTION: 28
     SHARE_BOX_FEATURE_EXTRACTOR: False
-  MASK_ON: True
+  MASK_ON: False
 DATASETS:
-  TRAIN: ("openimages_train_cocostyle",)
-  TEST: ("openimages_val_cocostyle",)
+  TRAIN: ("openimages_train",)
+  TEST: ("openimages_val",)
 DATALOADER:
   SIZE_DIVISIBILITY: 32
 SOLVER:

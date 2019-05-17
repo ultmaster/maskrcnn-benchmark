@@ -104,17 +104,23 @@ class DatasetCatalog(object):
             "img_dir": "cityscapes/images",
             "ann_file": "cityscapes/annotations/instancesonly_filtered_gtFine_test.json"
         },
-        "openimages_train_cocostyle": {
+        "openimages_train": {
             "img_dir": "openimages/train",
-            "ann_file": "openimages/annotations/train-annotations-bbox.json"
+            "ann_file": "openimages/annotations/train-annotations-bbox.csv",
+            "class_file": "openimages/annotations/class-descriptions-boxable.csv",
+            "valid_images_file": "openimages/annotations/valid_images.csv",
         },
-        "openimages_val_cocostyle": {
+        "openimages_val": {
             "img_dir": "openimages/val",
-            "ann_file": "openimages/annotations/val-annotations-bbox.json"
+            "ann_file": "openimages/annotations/val-annotations-bbox.csv",
+            "class_file": "openimages/annotations/class-descriptions-boxable.csv",
+            "valid_images_file": "openimages/annotations/valid_images.csv",
         },
-        "openimages_test_cocostyle": {
+        "openimages_test": {
             "img_dir": "openimages/test",
-            "ann_file": "openimages/annotations/test-annotations-bbox.json"
+            "ann_file": "openimages/annotations/test-annotations-bbox.csv",
+            "class_file": "openimages/annotations/class-descriptions-boxable.csv",
+            "valid_images_file": "openimages/annotations/valid_images.csv",
         }
     }
 
@@ -141,6 +147,19 @@ class DatasetCatalog(object):
             return dict(
                 factory="PascalVOCDataset",
                 args=args,
+            )
+        elif "openimages" in name:
+            data_dir = DatasetCatalog.DATA_DIR
+            attrs = DatasetCatalog.DATASETS[name]
+            args = dict(
+                root=os.path.join(data_dir, attrs["img_dir"]),
+                ann_file=os.path.join(data_dir, attrs["ann_file"]),
+                class_descriptions_file=os.path.join(data_dir, attrs["class_file"]),
+                valid_image_list_file=os.path.join(data_dir, attrs["valid_images_file"]),
+            )
+            return dict(
+                factory="OpenImagesDataset",
+                args=args
             )
         raise RuntimeError("Dataset not available: {}".format(name))
 

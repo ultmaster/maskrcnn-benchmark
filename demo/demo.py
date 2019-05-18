@@ -10,12 +10,12 @@ config_file = "../configs/test_openimages_single.yaml"
 cfg.merge_from_file(config_file)
 # manual override some options
 # cfg.merge_from_list(["MODEL.DEVICE", "cpu"])
-cfg.merge_from_list(["MODEL.WEIGHT", "../checkpoints/20190517_170829/model_0020000.pth"])
+cfg.merge_from_list(["MODEL.WEIGHT", "../checkpoints/20190517_194949/model_0115000.pth"])
 
 coco_demo = OpenImagesDemo(
     cfg,
     min_image_size=800,
-    confidence_threshold=0.2,
+    confidence_threshold=0.6,
 )
 
 for file_name in os.listdir("images"):

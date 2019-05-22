@@ -29,7 +29,7 @@ MODEL:
     POOLER_SAMPLING_RATIO: 2
     RESOLUTION: 28
     SHARE_BOX_FEATURE_EXTRACTOR: False
-  MASK_ON: True
+  MASK_ON: False
 DATASETS:
   TRAIN: ("coco_2017_train_plus",)
   TEST: ("coco_2017_val",)

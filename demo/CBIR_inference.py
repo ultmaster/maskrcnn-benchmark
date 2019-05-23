@@ -19,7 +19,7 @@ from maskrcnn_benchmark.modeling.roi_heads.mask_head.inference import Masker
 from maskrcnn_benchmark import layers as L
 
 
-class OpenImagesDemo(object):
+class CocoDemo(object):
 
     def __init__(
             self,
@@ -51,7 +51,7 @@ class OpenImagesDemo(object):
         self.confidence_threshold = confidence_threshold
         self.masks_per_dim = masks_per_dim
 
-        with open("openimages_categories.txt") as file:
+        with open("coco_categories.txt") as file:
             self.categories = ["__background"] + list(map(lambda l: l.strip(), file.readlines()))
 
     def build_transform(self):
@@ -371,21 +371,25 @@ def run_image(image_path):
 
 if __name__ == "__main__":
     # detection preparation
-    config_file = "../configs/test_openimages_single.yaml"
+    config_file = "../configs/test_cocoplus_multiple.yaml"
 
     # update the config options with the config file
     cfg.merge_from_file(config_file)
     # manual override some options
     # cfg.merge_from_list(["MODEL.DEVICE", "cpu"])
-    cfg.merge_from_list(["MODEL.WEIGHT", "../checkpoints/20190517_194949/model_0132500.pth"])
+    cfg.merge_from_list(["MODEL.WEIGHT", "../checkpoints/20190522_105940/model_0020000.pth"])
 
-    coco_demo = OpenImagesDemo(
+    coco_demo = CocoDemo(
         cfg,
         min_image_size=800,
         confidence_threshold=0.4,
     )
     result = dict()
     for file_name in sorted(os.listdir("CBIR/images")):
+        # skip many images
+        if "_000" not in file_name:
+            continue
+
         # load image and then run prediction
         image_path = os.path.join("CBIR/images", file_name)
 
@@ -400,7 +404,7 @@ if __name__ == "__main__":
         scores_prediction = bbox.extra_fields["scores"].tolist()
         result[file_name] = {"bbox": bbox_prediction, "labels": labels_prediction,
                              "scores": scores_prediction, "features": image_features}
-        print("Running on", file_name, bbox)
+        print("Running on", file_name, labels_prediction)
         cv2.imwrite(os.path.join("CBIR/predictions", file_name), predictions)
     with open("CBIR/annotations.json", "w") as f:
         json.dump(result, f)

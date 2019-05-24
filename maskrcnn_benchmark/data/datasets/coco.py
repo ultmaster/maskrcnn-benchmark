@@ -70,6 +70,10 @@ class COCODataset(torchvision.datasets.coco.CocoDetection):
         # TODO might be better to add an extra field
         anno = [obj for obj in anno if obj["iscrowd"] == 0]
 
+        if not anno:
+            print(self.ids[idx])
+            print(self.coco.loadImgs(self.ids[idx])[0])
+
         boxes = [obj["bbox"] for obj in anno]
         boxes = torch.as_tensor(boxes).reshape(-1, 4)  # guard against no boxes
         target = BoxList(boxes, img.size, mode="xywh").convert("xyxy")

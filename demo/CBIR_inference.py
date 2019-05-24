@@ -51,8 +51,17 @@ class CocoDemo(object):
         self.confidence_threshold = confidence_threshold
         self.masks_per_dim = masks_per_dim
 
-        with open("coco_categories.txt") as file:
-            self.categories = ["__background"] + list(map(lambda l: l.strip(), file.readlines()))
+        self.categories = [
+            "__background",
+            "human",
+            "bear",
+            "bat",
+            "backpack",
+            "basketball-hoop",
+            "bathtub",
+            "flag",
+            "gun",
+        ]
 
     def build_transform(self):
         """
@@ -377,24 +386,26 @@ if __name__ == "__main__":
     cfg.merge_from_file(config_file)
     # manual override some options
     # cfg.merge_from_list(["MODEL.DEVICE", "cpu"])
-    cfg.merge_from_list(["MODEL.WEIGHT", "../checkpoints/20190522_105940/model_0020000.pth"])
+    cfg.merge_from_list(["MODEL.WEIGHT", "../checkpoints/20190523_110544/model_final.pth"])
 
     coco_demo = CocoDemo(
         cfg,
         min_image_size=800,
-        confidence_threshold=0.4,
+        confidence_threshold=0.7,
     )
     result = dict()
     for file_name in sorted(os.listdir("CBIR/images")):
         # skip many images
-        if "_000" not in file_name:
+        a, b = map(int, file_name.split(".")[0].split("_"))
+        if b > 100:
             continue
 
         # load image and then run prediction
         image_path = os.path.join("CBIR/images", file_name)
 
         # extract features
-        image_features = run_image(image_path)
+        image_features = []
+        # image_features = run_image(image_path)
 
         # detection
         image = cv2.imread(image_path)
@@ -404,7 +415,7 @@ if __name__ == "__main__":
         scores_prediction = bbox.extra_fields["scores"].tolist()
         result[file_name] = {"bbox": bbox_prediction, "labels": labels_prediction,
                              "scores": scores_prediction, "features": image_features}
-        print("Running on", file_name, labels_prediction)
+        print(file_name, list(zip(labels_prediction, scores_prediction)))
         cv2.imwrite(os.path.join("CBIR/predictions", file_name), predictions)
     with open("CBIR/annotations.json", "w") as f:
         json.dump(result, f)
